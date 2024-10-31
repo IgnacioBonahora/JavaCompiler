@@ -31,6 +31,8 @@ public class Lexer {
                 tokens.add(new Token(Token.TokenType.INTEGER_LITERAL, lastMatch));
             } else if (match("\\+|\\-|\\*|/|>=|<=|==|!=|<>|>|<|&&|\\|\\||=")) { // Operadores
                 tokens.add(new Token(Token.TokenType.OPERATOR, lastMatch));
+            } else if (match("\\(") || match("\\)")) { // Paréntesis
+                tokens.add(new Token(Token.TokenType.PUNCTUATION, lastMatch));
             } else if (match("\\s+")) { // Ignorar espacios en blanco
                 continue;
             } else {
