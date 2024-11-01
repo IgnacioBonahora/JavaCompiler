@@ -4,7 +4,7 @@ public class Main {
     public static void main(String[] args) {
         // Código de prueba que queremos analizar
         String code = """
-    if (_var1 > 0) then
+    if ( _hola > 0 && _hola == 0) then
         write _var1;
 """;
 

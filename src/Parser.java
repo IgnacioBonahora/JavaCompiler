@@ -30,7 +30,7 @@ public class Parser {
                 case "if":
                     parseIfStatement();
                     break;
-                case "write":
+                case "while":
                     parseWriteStatement();
                     break;
                 default:
@@ -43,7 +43,8 @@ public class Parser {
         }
     }
 
-    private void parseIfStatement() {
+    private void parseIfStatement( ) {
+
         consumeToken(); // Consume 'if'
 
         // Verificar y consumir el paréntesis de apertura
@@ -51,6 +52,14 @@ public class Parser {
 
         // Parse conditional expression
         parseExpression(); // e.g., `_var1 > 0`
+
+        Token token = getCurrentToken();
+        // Continuar si se encuentran operadores lógicos
+        while (token != null && (token.getValue().equals("||") || token.getValue().equals("&&"))) {
+            consumeToken(); // Consume '||' o '&&'
+            parseExpression(); // Parse de la siguiente expresión condicional
+            token = getCurrentToken();
+        }
 
         // Verificar y consumir el paréntesis de cierre
         expect(")");
