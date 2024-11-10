@@ -9,117 +9,178 @@ public class Parser {
         this.currentTokenIndex = 0;
     }
 
-    private Token getCurrentToken() {
-        return currentTokenIndex < tokens.size() ? tokens.get(currentTokenIndex) : null;
-    }
-
-    private Token consumeToken() {
-        return tokens.get(currentTokenIndex++);
-    }
-
     public void parse() {
-        while (getCurrentToken() != null && getCurrentToken().getType() != Token.TokenType.EOF) {
+        while (currentTokenIndex < tokens.size() && getCurrentToken().getType() != Token.TokenType.EOF) {
             parseStatement();
         }
     }
 
     private void parseStatement() {
         Token token = getCurrentToken();
-        if (token.getType() == Token.TokenType.KEYWORD) {
-            switch (token.getValue()) {
-                case "if":
-                    parseIfStatement();
-                    break;
-                case "while":
-                    parseWriteStatement();
-                    break;
-                default:
-                    throw new RuntimeException("Unexpected keyword: " + token.getValue());
-            }
-        } else if (token.getType() == Token.TokenType.IDENTIFIER) {
+
+        // Ignorar comentarios
+        if (token.getType() == Token.TokenType.COMMENT) {
+            consumeToken();
+            return;
+        }
+
+        // Declaración de variables
+        if (token.getType() == Token.TokenType.DATA_TYPE) {
+            parseDeclaration();
+            return;
+        }
+
+        // If statement
+        if (token.getValue().equals("if")) {
+            parseIfStatement();
+            return;
+        }
+
+        // While statement
+        if (token.getValue().equals("while")) {
+            parseWhileStatement();
+            return;
+        }
+
+        // Write statement
+        if (token.getValue().equals("write")) {
+            parseWriteStatement();
+            return;
+        }
+
+        // Break statement
+        if (token.getValue().equals("break")) {
+            parseBreakStatement();
+            return;
+        }
+
+        // Asignación
+        if (token.getType() == Token.TokenType.IDENTIFIER) {
             parseAssignment();
+            return;
+        }
+
+        throw new RuntimeException("Token inesperado: " + token);
+    }
+
+    private void parseDeclaration() {
+        consumeToken(); // Consume el tipo de dato
+
+        Token identifierToken = getCurrentToken();
+        if (identifierToken.getType() != Token.TokenType.IDENTIFIER &&
+                identifierToken.getType() != Token.TokenType.INVALID_IDENTIFIER) {
+            throw new RuntimeException("Se esperaba un identificador");
+        }
+        consumeToken(); // Consume el identificador
+
+        if (getCurrentToken().getValue().equals("=")) {
+            consumeToken(); // Consume el '='
+            parseExpression();
+        }
+
+        expectSemicolon();
+    }
+
+    private void parseAssignment() {
+        consumeToken(); // Consume el identificador
+        expect("=");
+        parseExpression();
+        expectSemicolon();
+    }
+
+    private void parseExpression() {
+        Token token = getCurrentToken();
+        if (token == null) {
+            throw new RuntimeException("Se esperaba una expresión pero se encontró EOF");
+        }
+
+        if (token.getType() == Token.TokenType.INTEGER_LITERAL ||
+                token.getType() == Token.TokenType.FLOAT_LITERAL ||
+                token.getType() == Token.TokenType.IDENTIFIER) {
+            consumeToken();
+
+            token = getCurrentToken();
+            if (token != null && token.getType() == Token.TokenType.OPERATOR &&
+                    (token.getValue().equals("+") || token.getValue().equals("-") ||
+                            token.getValue().equals("*") || token.getValue().equals("/"))) {
+                consumeToken(); // Consume el operador
+                parseExpression(); // Recursivamente parsea el resto de la expresión
+            }
         } else {
-            throw new RuntimeException("Unexpected token: " + token);
+            throw new RuntimeException("Se esperaba un valor o identificador pero se encontró: " + token);
         }
     }
 
-    private void parseIfStatement( ) {
-
-        consumeToken(); // Consume 'if'
-
-        // Verificar y consumir el paréntesis de apertura
-        expect("(");
-
-        // Parse conditional expression
-        parseExpression(); // e.g., `_var1 > 0`
-
+    private void expectSemicolon() {
         Token token = getCurrentToken();
-        // Continuar si se encuentran operadores lógicos
-        while (token != null && (token.getValue().equals("||") || token.getValue().equals("&&"))) {
-            consumeToken(); // Consume '||' o '&&'
-            parseExpression(); // Parse de la siguiente expresión condicional
-            token = getCurrentToken();
+        if (token.getType() != Token.TokenType.PUNCTUATION || !token.getValue().equals(";")) {
+            throw new RuntimeException("Se esperaba ';' pero se encontró: " + token);
         }
+        consumeToken();
+    }
 
-        // Verificar y consumir el paréntesis de cierre
+    private void parseIfStatement() {
+        consumeToken(); // Consume 'if'
+        expect("(");
+        parseCondition();
         expect(")");
-
-        // Verifies "then"
         expect("then");
+        parseStatement();
 
-        // Parses the statement in the "then" block
+        if (getCurrentToken().getValue().equals("else")) {
+            consumeToken(); // Consume 'else'
+            parseStatement();
+        }
+    }
+
+    private void parseWhileStatement() {
+        consumeToken(); // Consume 'while'
+        expect("(");
+        parseCondition();
+        expect(")");
+        expect("do");
         parseStatement();
     }
 
     private void parseWriteStatement() {
         consumeToken(); // Consume 'write'
-        if (getCurrentToken().getType() != Token.TokenType.IDENTIFIER) {
-            throw new RuntimeException("Expected identifier after 'write'");
+        Token identifier = getCurrentToken();
+        if (identifier.getType() != Token.TokenType.IDENTIFIER) {
+            throw new RuntimeException("Se esperaba un identificador después de 'write'");
         }
-        consumeToken(); // Consume identifier
+        consumeToken();
+        expectSemicolon();
     }
 
-    private void parseAssignment() {
-        Token identifier = consumeToken(); // Consume identifier
-        expect("=");
+    private void parseBreakStatement() {
+        consumeToken(); // Consume 'break'
+        expectSemicolon();
+    }
+
+    private Token getCurrentToken() {
+        if (currentTokenIndex >= tokens.size()) {
+            return null;
+        }
+        return tokens.get(currentTokenIndex);
+    }
+
+    private Token consumeToken() {
+        Token current = getCurrentToken();
+        currentTokenIndex++;
+        return current;
+    }
+
+    private void parseCondition() {
         parseExpression();
-    }
-
-    private void parseExpression() {
-        parseRelationalExpression();
-    }
-
-    private void parseRelationalExpression() {
-        parseTerm();
-        while (getCurrentToken() != null &&
-                (getCurrentToken().getValue().equals(">") ||
-                        getCurrentToken().getValue().equals("<") ||
-                        getCurrentToken().getValue().equals(">=") ||
-                        getCurrentToken().getValue().equals("<=") ||
-                        getCurrentToken().getValue().equals("==") ||
-                        getCurrentToken().getValue().equals("!="))) {
-            consumeToken(); // Consume comparison operator
-            parseTerm();
-        }
-    }
-
-    private void parseTerm() {
-        parseFactor();
-        while (getCurrentToken() != null &&
-                (getCurrentToken().getValue().equals("+") || getCurrentToken().getValue().equals("-"))) {
-            consumeToken(); // Consume '+' or '-'
-            parseFactor();
-        }
-    }
-
-    private void parseFactor() {
         Token token = getCurrentToken();
-        if (token.getType() == Token.TokenType.INTEGER_LITERAL) {
-            consumeToken();
-        } else if (token.getType() == Token.TokenType.IDENTIFIER) {
-            consumeToken();
-        } else {
-            throw new RuntimeException("Unexpected token in expression: " + token);
+        while (token != null && token.getType() == Token.TokenType.OPERATOR &&
+                (token.getValue().equals("||") || token.getValue().equals("&&") ||
+                        token.getValue().equals(">") || token.getValue().equals("<") ||
+                        token.getValue().equals(">=") || token.getValue().equals("<=") ||
+                        token.getValue().equals("=="))) {
+            consumeToken(); // Consume el operador
+            parseExpression();
+            token = getCurrentToken();
         }
     }
 

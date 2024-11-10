@@ -1,0 +1,8 @@
+long _var1 = 0;
+double _y = 5.5;
+double _var2 = 5.0;
+if (_hola > 0 && _hola == 0) then
+    write _var1;
+while (_var1 + 10) do
+    _var1 = _var1 + 1;
+    write _var1;
