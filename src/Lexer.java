@@ -21,7 +21,9 @@ public class Lexer {
                 tokens.add(new Token(Token.TokenType.COMMENT, lastMatch));
             } else if (match("/\\*([\\s\\S]*?)\\*/")) { // Comentarios de varias líneas
                 tokens.add(new Token(Token.TokenType.COMMENT, lastMatch.replaceAll("\n", " ")));
-            } else if (match("\\b(long|double|if|then|else|while|break|read|write)\\b")) { // Palabras reservadas
+            } else if (match("\\b(long|double)\\b")) { // Tipos de datos (long y double)
+                tokens.add(new Token(Token.TokenType.DATA_TYPE, lastMatch));
+            } else if (match("\\b(if|then|else|while|do|break|read|write)\\b")) { // Palabras reservadas
                 tokens.add(new Token(Token.TokenType.KEYWORD, lastMatch));
             } else if (match("_\\w+")) { // Identificadores
                 tokens.add(new Token(Token.TokenType.IDENTIFIER, lastMatch));

@@ -25,17 +25,33 @@ public class Parser {
 
     private void parseStatement() {
         Token token = getCurrentToken();
+        // Si el token es un comentario, lo ignoramos y consumimos
+        while (token != null && token.getType() == Token.TokenType.COMMENT) {
+            consumeToken();
+            token = getCurrentToken();
+        }
+
+        // Si llegamos al EOF, terminamos el análisis
+        if (token == null || token.getType() == Token.TokenType.EOF) {
+            return;
+        }
+
         if (token.getType() == Token.TokenType.KEYWORD) {
             switch (token.getValue()) {
                 case "if":
                     parseIfStatement();
                     break;
                 case "while":
+                    parseWhileStatement();
+                    break;
+                case "write":
                     parseWriteStatement();
                     break;
                 default:
                     throw new RuntimeException("Unexpected keyword: " + token.getValue());
             }
+        } else if (token.getType() == Token.TokenType.DATA_TYPE) {
+            parseDeclaration();
         } else if (token.getType() == Token.TokenType.IDENTIFIER) {
             parseAssignment();
         } else {
@@ -43,31 +59,41 @@ public class Parser {
         }
     }
 
-    private void parseIfStatement( ) {
+    private void parseDeclaration() {
+        Token dataTypeToken = consumeToken(); // Consume 'long' o 'double'
+        String dataType = dataTypeToken.getValue();
 
-        consumeToken(); // Consume 'if'
+        if (getCurrentToken().getType() != Token.TokenType.IDENTIFIER) {
+            throw new RuntimeException("Expected identifier after data type");
+        }
+        consumeToken(); // Consume identifier
 
-        // Verificar y consumir el paréntesis de apertura
-        expect("(");
-
-        // Parse conditional expression
-        parseExpression(); // e.g., `_var1 > 0`
-
-        Token token = getCurrentToken();
-        // Continuar si se encuentran operadores lógicos
-        while (token != null && (token.getValue().equals("||") || token.getValue().equals("&&"))) {
-            consumeToken(); // Consume '||' o '&&'
-            parseExpression(); // Parse de la siguiente expresión condicional
-            token = getCurrentToken();
+        expect("="); // Consume '='
+        Token valueToken = getCurrentToken(); // Obtener el token de la expresión de la asignación
+        if ((dataType.equals("long") && valueToken.getType() != Token.TokenType.INTEGER_LITERAL) ||
+                (dataType.equals("double") && valueToken.getType() != Token.TokenType.FLOAT_LITERAL)) {
+            throw new RuntimeException("Error de tipo: no se puede asignar un valor " + valueToken.getType() +
+                    " a una variable de tipo " + dataType);
         }
 
-        // Verificar y consumir el paréntesis de cierre
+        parseExpression(); // Parse expresión de asignación
+    }
+
+    private void parseIfStatement() {
+        consumeToken(); // Consume 'if'
+        expect("(");
+        parseLogicalExpression(); // Evaluar expresión lógica completa
         expect(")");
-
-        // Verifies "then"
         expect("then");
+        parseStatement();
+    }
 
-        // Parses the statement in the "then" block
+    private void parseWhileStatement() {
+        consumeToken(); // Consume 'while'
+        expect("(");
+        parseLogicalExpression(); // Evaluar expresión lógica completa
+        expect(")");
+        expect("do");
         parseStatement();
     }
 
@@ -80,13 +106,22 @@ public class Parser {
     }
 
     private void parseAssignment() {
-        Token identifier = consumeToken(); // Consume identifier
+        consumeToken(); // Consume identifier
         expect("=");
         parseExpression();
     }
 
     private void parseExpression() {
         parseRelationalExpression();
+    }
+
+    private void parseLogicalExpression() {
+        parseRelationalExpression();
+        while (getCurrentToken() != null &&
+                (getCurrentToken().getValue().equals("&&") || getCurrentToken().getValue().equals("||"))) {
+            consumeToken(); // Consume operador lógico '&&' o '||'
+            parseRelationalExpression();
+        }
     }
 
     private void parseRelationalExpression() {
@@ -98,7 +133,7 @@ public class Parser {
                         getCurrentToken().getValue().equals("<=") ||
                         getCurrentToken().getValue().equals("==") ||
                         getCurrentToken().getValue().equals("!="))) {
-            consumeToken(); // Consume comparison operator
+            consumeToken(); // Consume operador relacional
             parseTerm();
         }
     }
@@ -107,14 +142,14 @@ public class Parser {
         parseFactor();
         while (getCurrentToken() != null &&
                 (getCurrentToken().getValue().equals("+") || getCurrentToken().getValue().equals("-"))) {
-            consumeToken(); // Consume '+' or '-'
+            consumeToken(); // Consume '+' o '-'
             parseFactor();
         }
     }
 
     private void parseFactor() {
         Token token = getCurrentToken();
-        if (token.getType() == Token.TokenType.INTEGER_LITERAL) {
+        if (token.getType() == Token.TokenType.INTEGER_LITERAL || token.getType() == Token.TokenType.FLOAT_LITERAL) {
             consumeToken();
         } else if (token.getType() == Token.TokenType.IDENTIFIER) {
             consumeToken();

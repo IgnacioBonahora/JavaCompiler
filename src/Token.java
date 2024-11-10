@@ -1,7 +1,7 @@
 public class Token {
     public enum TokenType {
         IDENTIFIER, KEYWORD, OPERATOR, COMMENT, INTEGER_LITERAL, FLOAT_LITERAL,
-        PUNCTUATION, WHITESPACE, EOF // EOF: Fin de archivo
+        PUNCTUATION, WHITESPACE, DATA_TYPE, EOF // Agregado DATA_TYPE para los tipos de datos
     }
 
     private TokenType type;
@@ -25,4 +25,5 @@ public class Token {
         return "Token{" + "type=" + type + ", value='" + value + '\'' + '}';
     }
 }
+
 

@@ -4,10 +4,13 @@ public class Main {
     public static void main(String[] args) {
         // Código de prueba que queremos analizar
         String code = """
-    long _var1 = 0;
-    if ( _hola > 0 && _hola == 0) then
-        write _var1;
-        
+    /*hola tincho
+    */
+    while (_numero > 0) do
+        if (_numero == 50) then
+            _numero = _numero + 1;
+        else
+            _numero = _numero - 1;
 """;
 
         // Paso 1: Tokenizar el código
