@@ -4,8 +4,10 @@ public class Main {
     public static void main(String[] args) {
         // Código de prueba que queremos analizar
         String code = """
+    long _var1 = 0;
     if ( _hola > 0 && _hola == 0) then
         write _var1;
+        
 """;
 
         // Paso 1: Tokenizar el código
@@ -25,3 +27,5 @@ public class Main {
     }
 }
 
+
+//todo hacer parser de declaracion de variables (long, double)
