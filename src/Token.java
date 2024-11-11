@@ -2,7 +2,7 @@ public class Token {
     public enum TokenType {
         COMMENT, DATA_TYPE, KEYWORD, IDENTIFIER,
         FLOAT_LITERAL, INTEGER_LITERAL, OPERATOR,
-        PUNCTUATION, EOF,
+        PUNCTUATION, EOF,NEWLINE,
         INVALID_IDENTIFIER
     }
 

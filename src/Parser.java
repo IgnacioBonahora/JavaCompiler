@@ -1,12 +1,16 @@
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class Parser {
     private List<Token> tokens;
     private int currentTokenIndex;
+    private Map<String, Token> symbolTable; // Tabla de símbolos para almacenar variables
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
         this.currentTokenIndex = 0;
+        this.symbolTable = new HashMap<>(); // Inicializa la tabla de símbolos
     }
 
     public void parse() {
@@ -71,6 +75,9 @@ public class Parser {
                 identifierToken.getType() != Token.TokenType.INVALID_IDENTIFIER) {
             throw new RuntimeException("Se esperaba un identificador");
         }
+
+        // Añadir la variable a la tabla de símbolos con un valor inicial nulo
+        symbolTable.put(identifierToken.getValue(), identifierToken);
         consumeToken(); // Consume el identificador
 
         if (getCurrentToken().getValue().equals("=")) {
@@ -78,14 +85,25 @@ public class Parser {
             parseExpression();
         }
 
-        expectSemicolon();
+        expectEndOfStatement();
     }
 
     private void parseAssignment() {
+        Token identifierToken = getCurrentToken();
+
+        // Verificar si la variable ha sido declarada
+        if (!symbolTable.containsKey(identifierToken.getValue())) {
+            throw new RuntimeException("La variable '" + identifierToken.getValue() + "' no ha sido declarada. Asegúrate de declararla antes de usarla.");
+        }
+
         consumeToken(); // Consume el identificador
         expect("=");
+
+        // Actualizar el valor de la variable en la tabla de símbolos después de la expresión
         parseExpression();
-        expectSemicolon();
+        symbolTable.put(identifierToken.getValue(), identifierToken); // Actualiza el valor en la tabla
+
+        expectEndOfStatement();
     }
 
     private void parseExpression() {
@@ -97,6 +115,12 @@ public class Parser {
         if (token.getType() == Token.TokenType.INTEGER_LITERAL ||
                 token.getType() == Token.TokenType.FLOAT_LITERAL ||
                 token.getType() == Token.TokenType.IDENTIFIER) {
+
+            // Verificar si el identificador usado en la expresión ha sido declarado
+            if (token.getType() == Token.TokenType.IDENTIFIER && !symbolTable.containsKey(token.getValue())) {
+                throw new RuntimeException("La variable '" + token.getValue() + "' no ha sido declarada");
+            }
+
             consumeToken();
 
             token = getCurrentToken();
@@ -111,12 +135,20 @@ public class Parser {
         }
     }
 
-    private void expectSemicolon() {
+    private void expectEndOfStatement() {
         Token token = getCurrentToken();
-        if (token.getType() != Token.TokenType.PUNCTUATION || !token.getValue().equals(";")) {
-            throw new RuntimeException("Se esperaba ';' pero se encontró: " + token);
+        if (token == null || token.getType() == Token.TokenType.EOF) {
+            return; // Fin del archivo se acepta como el fin de una declaración
         }
-        consumeToken();
+
+        // Verificar si el token actual es un salto de línea o un punto y coma
+        if (token.getType() == Token.TokenType.PUNCTUATION && token.getValue().equals(";")) {
+            consumeToken();
+        } else if (token.getType() == Token.TokenType.NEWLINE) {
+            consumeToken();
+        } else {
+            throw new RuntimeException("Se esperaba un delimitador de declaración (punto y coma o salto de línea) pero se encontró: " + token);
+        }
     }
 
     private void parseIfStatement() {
@@ -144,54 +176,43 @@ public class Parser {
 
     private void parseWriteStatement() {
         consumeToken(); // Consume 'write'
-        Token identifier = getCurrentToken();
-        if (identifier.getType() != Token.TokenType.IDENTIFIER) {
-            throw new RuntimeException("Se esperaba un identificador después de 'write'");
-        }
-        consumeToken();
-        expectSemicolon();
+        parseExpression();
+        expectEndOfStatement();
     }
 
     private void parseBreakStatement() {
         consumeToken(); // Consume 'break'
-        expectSemicolon();
-    }
-
-    private Token getCurrentToken() {
-        if (currentTokenIndex >= tokens.size()) {
-            return null;
-        }
-        return tokens.get(currentTokenIndex);
-    }
-
-    private Token consumeToken() {
-        Token current = getCurrentToken();
-        currentTokenIndex++;
-        return current;
+        expectEndOfStatement();
     }
 
     private void parseCondition() {
         parseExpression();
+
         Token token = getCurrentToken();
-        while (token != null && token.getType() == Token.TokenType.OPERATOR &&
-                (token.getValue().equals("||") || token.getValue().equals("&&") ||
-                        token.getValue().equals(">") || token.getValue().equals("<") ||
-                        token.getValue().equals(">=") || token.getValue().equals("<=") ||
-                        token.getValue().equals("=="))) {
+        if (token.getType() == Token.TokenType.OPERATOR &&
+                (token.getValue().equals("==") || token.getValue().equals("!=") ||
+                        token.getValue().equals("<") || token.getValue().equals(">") ||
+                        token.getValue().equals("<=") || token.getValue().equals(">="))) {
             consumeToken(); // Consume el operador
-            parseExpression();
-            token = getCurrentToken();
+            parseExpression(); // Recursivamente parsea el otro lado de la condición
+        } else {
+            throw new RuntimeException("Se esperaba un operador de condición pero se encontró: " + token);
         }
     }
 
-    private void expect(String value) {
+    private void expect(String expectedValue) {
         Token token = getCurrentToken();
-        if (token != null && token.getValue().equals(value)) {
-            consumeToken();
-        } else {
-            throw new RuntimeException("Error de sintaxis: se esperaba el token '" + value + "' pero se encontró: "
-                    + (token != null ? token : "EOF")
-                    + " en posición " + currentTokenIndex);
+        if (token == null || !token.getValue().equals(expectedValue)) {
+            throw new RuntimeException("Se esperaba '" + expectedValue + "' pero se encontró: " + token);
         }
+        consumeToken();
+    }
+
+    private Token getCurrentToken() {
+        return currentTokenIndex < tokens.size() ? tokens.get(currentTokenIndex) : null;
+    }
+
+    private void consumeToken() {
+        currentTokenIndex++;
     }
 }

@@ -1,3 +1,0 @@
-long _x = 500;
-double _y = 10.5;
-write _x; 

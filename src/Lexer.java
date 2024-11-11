@@ -44,6 +44,8 @@ public class Lexer {
                 tokens.add(new Token(Token.TokenType.PUNCTUATION, lastMatch));
             } else if (match("\\s+")) { // Ignorar espacios en blanco
                 continue;
+            } else if (match("\n")) { // Saltos de línea
+                tokens.add(new Token(Token.TokenType.NEWLINE, "\\n"));
             } else {
                 throw new RuntimeException("Error léxico: carácter no reconocido en posición " + position +
                         ": " + sourceCode.charAt(position));
@@ -53,6 +55,7 @@ public class Lexer {
         tokens.add(new Token(Token.TokenType.EOF, "EOF"));
         return tokens;
     }
+
 
     private boolean match(String regex) {
         Pattern pattern = Pattern.compile(regex);
