@@ -1,4 +1,0 @@
-long numero = 123;
-double decimal = 123.456;
-if (numero > 100 && decimal < 200.0) then
-    write numero; 

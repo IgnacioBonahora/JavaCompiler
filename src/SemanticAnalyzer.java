@@ -58,13 +58,13 @@ public class SemanticAnalyzer {
 
         if (identifier.length() < 2) {
             throw new SemanticException("Error: El identificador '" + identifier +
-                    "' debe tener al menos una letra después del '_'");
+                    "' debe tener al menos un carácter después del '_'");
         }
 
         for (int i = 1; i < identifier.length(); i++) {
-            if (!Character.isLetter(identifier.charAt(i))) {
+            if (!Character.isLetterOrDigit(identifier.charAt(i))) {
                 throw new SemanticException("Error: El identificador '" + identifier +
-                        "' solo debe contener letras después del '_'");
+                        "' solo debe contener letras o números después del '_'");
             }
         }
     }

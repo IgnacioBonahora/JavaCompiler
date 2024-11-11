@@ -15,9 +15,10 @@ public class Lexer {
         this.position = 0;
 
         // Debug: Imprimir los primeros caracteres del código fuente
-        System.out.println("Primeros 100 caracteres del código fuente:");
-        System.out.println(sourceCode.substring(0, Math.min(100, sourceCode.length())));
-        System.out.println("Longitud total del código: " + sourceCode.length());
+        // System.out.println("Primeros 100 caracteres del código fuente:");
+        // System.out.println(sourceCode.substring(0, Math.min(100,
+        // sourceCode.length())));
+        System.out.println("Longitud total del código: " + sourceCode.length() + "\n");
     }
 
     public List<Token> tokenize() {

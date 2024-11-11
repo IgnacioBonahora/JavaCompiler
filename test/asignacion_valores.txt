@@ -1,0 +1,8 @@
+long _x = 12123121;
+double _y = 10.5;
+
+double _z = 103312;
+
+//tendria que dar error porque no se puede asignar un double a un long
+
+long _w = 10.5;
