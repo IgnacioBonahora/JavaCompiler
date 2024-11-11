@@ -1,0 +1,23 @@
+/* Este es un comentario 
+   multilinea para probar */
+
+// Declaraciones con identificadores válidos
+long _numero = 123;
+double _decimal = 123.456;
+
+
+// Prueba de if-then con operadores lógicos
+if (_numero > 100 && _decimal < 200.0) then
+    write _numero;
+
+// Prueba de while
+while (_numero > 0) do
+    _numero = _numero - 1;
+
+
+// Prueba de operadores relacionales
+if (_numero >= 100 || _decimal <= 300.0) then
+    write _numero;
+
+// Prueba de asignación inválida de tipos
+_numero = 123.456;  // Debería dar error por asignar float a long 

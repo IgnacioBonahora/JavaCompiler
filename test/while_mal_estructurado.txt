@@ -1,0 +1,3 @@
+long _var1 = 0;
+while (_var1 < 10)
+    _var1 = _var1 + 1;
