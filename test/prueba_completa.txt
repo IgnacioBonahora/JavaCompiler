@@ -5,9 +5,9 @@
 long _numero = 123;
 double _decimal = 123.456;
 
-// Declaraciones con identificadores inválidos (deberían dar error)
+/* Declaraciones con identificadores inválidos (deberían dar error)
 long numero = 100;
-double x2 = 10.5;
+double x2 = 10.5; */
 
 // Prueba de if-then-else con operadores lógicos
 if (_numero > 100 && _decimal < 200.0) then

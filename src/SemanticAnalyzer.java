@@ -25,10 +25,9 @@ public class SemanticAnalyzer {
                 }
 
                 // Verificar declaraciones y asignaciones
-                if (token.getType() == Token.TokenType.KEYWORD &&
-                        (token.getValue().equals("long") || token.getValue().equals("double"))) {
+                if (token.getType() == Token.TokenType.DATA_TYPE) {
                     if (i + 1 < tokens.size() && tokens.get(i + 1).getType() == Token.TokenType.IDENTIFIER) {
-                        handleVariableDeclaration(tokens.get(i).getValue(), tokens.get(i + 1).getValue());
+                        handleVariableDeclaration(token.getValue(), tokens.get(i + 1).getValue());
                     }
                 }
 
@@ -88,13 +87,15 @@ public class SemanticAnalyzer {
 
         // Validar tipos
         if (varInfo.getType().equals("long")) {
-            if (valueToken.getType() != Token.TokenType.INTEGER_LITERAL) {
+            if (valueToken.getType() != Token.TokenType.INTEGER_LITERAL &&
+                    valueToken.getType() != Token.TokenType.IDENTIFIER) {
                 throw new SemanticException("Error: Se esperaba un valor entero para la variable '" +
                         identifier + "'");
             }
         } else if (varInfo.getType().equals("double")) {
             if (valueToken.getType() != Token.TokenType.FLOAT_LITERAL &&
-                    valueToken.getType() != Token.TokenType.INTEGER_LITERAL) {
+                    valueToken.getType() != Token.TokenType.INTEGER_LITERAL &&
+                    valueToken.getType() != Token.TokenType.IDENTIFIER) {
                 throw new SemanticException("Error: Se esperaba un valor numérico para la variable '" +
                         identifier + "'");
             }
