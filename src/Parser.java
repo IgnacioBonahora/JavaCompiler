@@ -184,21 +184,39 @@ public class Parser {
         consumeToken(); // Consume 'break'
         expectEndOfStatement();
     }
-
     private void parseCondition() {
-        parseExpression();
+        parseExpression(); // Parsea la primera expresión
 
         Token token = getCurrentToken();
-        if (token.getType() == Token.TokenType.OPERATOR &&
+
+        // Manejar operadores de comparación y parsear otra expresión
+        if (token != null && token.getType() == Token.TokenType.OPERATOR &&
                 (token.getValue().equals("==") || token.getValue().equals("!=") ||
                         token.getValue().equals("<") || token.getValue().equals(">") ||
                         token.getValue().equals("<=") || token.getValue().equals(">="))) {
-            consumeToken(); // Consume el operador
-            parseExpression(); // Recursivamente parsea el otro lado de la condición
-        } else {
-            throw new RuntimeException("Se esperaba un operador de condición pero se encontró: " + token);
+
+            consumeToken(); // Consume el operador de comparación
+            parseExpression(); // Parsea el segundo término de la comparación
+            token = getCurrentToken();
+        }
+
+        // Manejar operadores lógicos (&&, ||) y parsear condiciones adicionales
+        while (token != null && token.getType() == Token.TokenType.OPERATOR &&
+                (token.getValue().equals("&&") || token.getValue().equals("||"))) {
+
+            consumeToken(); // Consume el operador lógico
+            parseCondition(); // Llamada recursiva para parsear la siguiente condición
+            token = getCurrentToken();
+        }
+
+        // Validar que termine en un paréntesis de cierre o en otro operador lógico
+        if (token != null && !token.getValue().equals(")") &&
+                !token.getValue().equals("&&") && !token.getValue().equals("||")) {
+            throw new RuntimeException("Se esperaba un operador de condición o ')' pero se encontró: " + token);
         }
     }
+
+
 
     private void expect(String expectedValue) {
         Token token = getCurrentToken();
