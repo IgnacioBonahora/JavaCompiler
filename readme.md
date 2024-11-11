@@ -86,6 +86,14 @@ Para verificar la funcionalidad del compilador, realizamos pruebas exhaustivas e
 - Pruebas Sintácticas: Desarrollamos casos de prueba que cubren la variedad de estructuras sintácticas del lenguaje, verificando que el parser construya correctamente el árbol sintáctico.
 - Pruebas Semánticas: Se probaron casos con tipos incompatibles y operaciones inválidas para comprobar la correcta identificación de errores semánticos.
 
+**Posibles Mejoras Futuras**
+
+- Optimización de la Generación de Código: La actual generación de código podría ser optimizada para producir un código más eficiente en términos de rendimiento y uso de recursos. Implementar técnicas de optimización como la eliminación de código muerto o la simplificación de expresiones podría reducir la carga del intérprete.
+- Mejora en el Manejo de Errores: Aunque se implementaron mensajes de error detallados, sería ideal mejorar el sistema de reportes de errores, proporcionando sugerencias para corregirlos o incluso implementando una recuperación de errores para continuar el análisis tras un fallo.
+- Ampliación del Soporte de Tipos de Datos: Actualmente, el compilador soporta solo tipos básicos (long y double). Extender este soporte a otros tipos, como int, float, o incluso tipos de datos complejos, añadiría mayor versatilidad y realismo al lenguaje compilado.
+- Soporte para Funciones y Procedimientos: Una funcionalidad avanzada sería permitir definiciones de funciones o procedimientos en el código fuente, lo que permitiría modularizar el código y reutilizar fragmentos de manera eficiente.
+- Análisis y Optimización Semántica Avanzada: Implementar análisis más sofisticados, como la detección de variables no usadas, optimización de bucles o análisis de alcance, podría mejorar la eficiencia del código resultante y proporcionar advertencias más detalladas al programador.
+
 **Conclusiones**
 
 Este proyecto integrador nos permitió adentrarnos en la construcción de un compilador, comprendiendo y aplicando cada fase del análisis de código. A lo largo del desarrollo, enfrentamos desafíos en la implementación de los distintos módulos y el manejo de errores, pero logramos superarlos y consolidar una estructura funcional que cumple con las especificaciones requeridas. La implementación modular y las pruebas exhaustivas nos permitieron construir un proyecto robusto y escalable. Este trabajo refuerza nuestro conocimiento en el desarrollo de compiladores y nos brinda una base sólida para enfrentar proyectos más complejos en el futuro.
